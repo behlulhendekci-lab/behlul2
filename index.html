@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mix Behlül">
+    <title>MIX GSM - Behlül Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b101e;
+            --card-bg: #161e31;
+            --card-border: #232d46;
+            --gold: #d4af37;
+            --gold-hover: #b5952f;
+            --text-main: #ffffff;
+            --text-muted: #8b95a5;
+            --danger: #ef4444;
+            --success: #10b981;
+            --nav-bg: #0f1524;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-top: calc(60px + var(--safe-top));
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: rgba(15, 21, 36, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            height: calc(60px + var(--safe-top));
+            padding-top: var(--safe-top);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--card-border);
+            z-index: 100;
+        }
+        .header-title { text-align: center; }
+        .header-title h1 { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: 1px; }
+        .header-title span { font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; display: block; }
+
+        /* Navigation */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: var(--safe-bottom);
+            z-index: 100;
+        }
+        .nav-btn {
+            flex: 1;
+            background: none; border: none;
+            color: var(--text-muted);
+            padding: 12px 0;
+            font-size: 10px; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .nav-btn.active { color: var(--gold); }
+        .nav-btn.active svg { stroke-width: 2.5; }
+
+        /* Views */
+        .view { display: none; padding: 20px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography & Layout */
+        .section-title { font-size: 13px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 1px; }
+        .section-title:first-child { margin-top: 0; }
+        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        
+        /* Checkboxes */
+        .task-list { display: flex; flex-direction: column; gap: 2px; }
+        .task-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+        .task-item:last-child { border-bottom: none; }
+        .task-item input { display: none; }
+        .check-box {
+            width: 24px; height: 24px; border-radius: 6px;
+            border: 2px solid var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: 0.2s; background: rgba(0,0,0,0.2);
+        }
+        .check-box svg { width: 14px; height: 14px; stroke: var(--bg-color); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: 0.2s; }
+        .task-item input:checked + .check-box { background: var(--gold); border-color: var(--gold); }
+        .task-item input:checked + .check-box svg { opacity: 1; }
+        .task-text { font-size: 14px; font-weight: 500; color: var(--text-main); transition: 0.2s; padding-top: 2px;}
+        .task-item input:checked ~ .task-text { color: var(--text-muted); text-decoration: line-through; }
+
+        /* Forms */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+        .form-control {
+            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border);
+            border-radius: 10px; color: var(--text-main); padding: 12px 14px;
+            font-family: inherit; font-size: 14px; transition: 0.2s;
+        }
+        .form-control:focus { outline: none; border-color: var(--gold); background: rgba(0,0,0,0.4); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        /* Buttons */
+        .btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; border: none; border-radius: 12px; padding: 14px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            font-family: inherit;
+        }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-gold:active { background: var(--gold-hover); transform: scale(0.98); }
+        .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+        .btn-outline:active { background: rgba(212, 175, 55, 0.1); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 20px;}
+
+        /* ChatGPT Prompts */
+        .prompt-card { border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+        .prompt-header { padding: 14px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; cursor: pointer; background: rgba(255,255,255,0.02); }
+        .prompt-header::after { content: '+'; font-size: 20px; color: var(--gold); font-weight: 400;}
+        .prompt-card.open .prompt-header::after { content: '-'; }
+        .prompt-body { display: none; padding: 14px; border-top: 1px solid var(--card-border); }
+        .prompt-card.open .prompt-body { display: block; }
+        .prompt-result { margin-top: 12px; display: none; }
+        .prompt-result textarea { min-height: 150px; border-color: var(--gold); font-size: 13px; line-height: 1.6; }
+
+        /* Rules List */
+        .rules-list { list-style: none; counter-reset: rule; }
+        .rules-list li {
+            position: relative; padding: 12px 12px 12px 40px;
+            background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px;
+            font-size: 14px; font-weight: 500; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .rules-list li::before {
+            counter-increment: rule; content: counter(rule);
+            position: absolute; left: 12px; top: 12px;
+            color: var(--gold); font-weight: 800; font-size: 12px;
+        }
+        .rules-list li.danger { border-left: 3px solid var(--danger); }
+        .rules-list li.success { border-left: 3px solid var(--success); }
+
+        /* Toast */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background: var(--success); color: #fff; padding: 10px 20px; border-radius: 30px;
+            font-size: 13px; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0; pointer-events: none; transition: 0.3s ease; z-index: 1000;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Reset Utils */
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row > div { flex: 1; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; background: rgba(212, 175, 55, 0.2); color: var(--gold); margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Kopyalandı!</div>
+
+    <header>
+        <div class="header-title">
+            <h1>MIX GSM</h1>
+            <span>BEHLÜL PANELİ</span>
+        </div>
+    </header>
+
+    <!-- VIEW: BUGÜN -->
+    <section id="view-bugun" class="view active">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px;">Bugünün Görevleri</h2>
+                <button onclick="clearCheckboxes('bugun')" style="background:none; border:none; color:var(--text-muted); font-size: 12px; text-decoration: underline; cursor:pointer;">Sıfırla</button>
+            </div>
+            
+            <div class="section-title">🌅 SABAH</div>
+            <div class="task-list" id="tasks-sabah"></div>
+
+            <div class="section-title">📱 SOSYAL MEDYA</div>
+            <div class="task-list" id="tasks-sosyal"></div>
+
+            <div class="section-title">💬 MÜŞTERİ</div>
+            <div class="task-list" id="tasks-musteri"></div>
+
+            <div class="section-title">🤖 MANYCHAT</div>
+            <div class="task-list" id="tasks-manychat"></div>
+
+            <div class="section-title">🌙 AKŞAM</div>
+            <div class="task-list" id="tasks-aksam"></div>
+        </div>
+    </section>
+
+    <!-- VIEW: HAFTA -->
+    <section id="view-hafta" class="view">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px;">Haftalık Görevler</h2>
+                <button onclick="clearCheckboxes('hafta')" style="background:none; border:none; color:var(--text-muted); font-size: 12px; text-decoration: underline; cursor:pointer;">Sıfırla</button>
+            </div>
+            <div class="task-list" id="tasks-hafta"></div>
+        </div>
+    </section>
+
+    <!-- VIEW: KAMPANYA -->
+    <section id="view-kampanya" class="view">
+        <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+            <div class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">KIRMIZI ÇİZGİ</div>
+            <p style="font-size: 12px; color: var(--text-muted);">Kampanya oluştururken: Sahte indirim, sahte eski fiyat, sahte stok, sahte son gün ve sahte müşteri yorumu <strong>ASLA KULLANILMAYACAK</strong>. Yayından önce İsa'nın onayı zorunludur.</p>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size: 18px; margin-bottom: 16px;">Yeni Kampanya Planı</h2>
+            
+            <div class="form-group">
+                <label>Ürün Adı & Modeli</label>
+                <input type="text" class="form-control ls-bind" id="camp-urun" placeholder="Örn: iPhone 17 Pro 256GB">
+            </div>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>Fiyat (Onaylı)</label>
+                    <input type="text" class="form-control ls-bind" id="camp-fiyat" placeholder="66.000 TL">
+                </div>
+                <div class="form-group">
+                    <label>Gerçek Stok</label>
+                    <input type="number" class="form-control ls-bind" id="camp-stok" placeholder="Adet">
+                </div>
+            </div>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>Başlangıç</label>
+                    <input type="date" class="form-control ls-bind" id="camp-baslangic">
+                </div>
+                <div class="form-group">
+                    <label>Bitiş</label>
+                    <input type="date" class="form-control ls-bind" id="camp-bitis">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Garanti / Kayıt Durumu Açıklaması</label>
+                <input type="text" class="form-control ls-bind" id="camp-garanti" placeholder="Müşteriye verilecek net bilgi">
+            </div>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>Ödeme Yöntemi</label>
+                    <input type="text" class="form-control ls-bind" id="camp-odeme" placeholder="Nakit / Havale vb.">
+                </div>
+                <div class="form-group">
+                    <label>Kargo Durumu</label>
+                    <input type="text" class="form-control ls-bind" id="camp-kargo" placeholder="Aynı gün ücretsiz kargo vb.">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Çağrı Metni (CTA)</label>
+                <input type="text" class="form-control ls-bind" id="camp-cta" placeholder="Güncel stok ve sipariş için DM'den yazabilirsiniz.">
+            </div>
+            <div class="form-group">
+                <label>Notlar / İsa Onayı</label>
+                <textarea class="form-control ls-bind" id="camp-notlar" placeholder="Özel notlar..."></textarea>
+            </div>
+            <button class="btn btn-danger" onclick="clearInputs('view-kampanya')">Formu Temizle</button>
+        </div>
+    </section>
+
+    <!-- VIEW: CHATGPT -->
+    <section id="view-chatgpt" class="view">
+        <div class="card">
+            <h2 style="font-size: 18px; margin-bottom: 6px;">İçerik Asistanı</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Gerekli alanları doldur, komutu hazırla ve ChatGPT/Claude/Gemini'ye yapıştır.</p>
+            
+            <div id="prompts-container"></div>
+        </div>
+    </section>
+
+    <!-- VIEW: RAPOR -->
+    <section id="view-rapor" class="view">
+        <div class="card">
+            <h2 style="font-size: 18px; margin-bottom: 16px;">Performans Raporu</h2>
+            <div class="flex-row">
+                <div class="form-group"><label>Gönderi</label><input type="number" class="form-control ls-bind" id="rep-gonderi"></div>
+                <div class="form-group"><label>Story</label><input type="number" class="form-control ls-bind" id="rep-story"></div>
+                <div class="form-group"><label>Reels</label><input type="number" class="form-control ls-bind" id="rep-reels"></div>
+            </div>
+            <div class="flex-row">
+                <div class="form-group"><label>Yeni DM</label><input type="number" class="form-control ls-bind" id="rep-dm"></div>
+                <div class="form-group"><label>Yorum</label><input type="number" class="form-control ls-bind" id="rep-yorum"></div>
+                <div class="form-group"><label>Bot Etkileşimi</label><input type="number" class="form-control ls-bind" id="rep-bot"></div>
+            </div>
+            <div class="flex-row">
+                <div class="form-group"><label>Sıcak Müşteri</label><input type="number" class="form-control ls-bind" id="rep-sicak"></div>
+                <div class="form-group"><label>İsa'ya Aktarılan</label><input type="number" class="form-control ls-bind" id="rep-aktarilan"></div>
+                <div class="form-group"><label>Satışa Dönen</label><input type="number" class="form-control ls-bind" id="rep-satis"></div>
+            </div>
+            <div class="form-group">
+                <label>En İyi İçerik / İlgi Gören Ürün</label>
+                <input type="text" class="form-control ls-bind" id="rep-eniyi">
+            </div>
+            <div class="form-group">
+                <label>Zayıf İçerik / Müşteri Kaybı Nedeni</label>
+                <input type="text" class="form-control ls-bind" id="rep-zayif">
+            </div>
+            <div class="form-group">
+                <label>Notlar & Gözlemler</label>
+                <textarea class="form-control ls-bind" id="rep-notlar"></textarea>
+            </div>
+            <button class="btn btn-outline" style="margin-bottom: 10px;" onclick="generateReportPrompt()">🤖 AI Analiz Komutu Oluştur</button>
+            
+            <div id="report-prompt-box" style="display: none;">
+                <textarea class="form-control" id="report-prompt-text" style="border-color: var(--gold); margin-bottom: 10px;" readonly></textarea>
+                <button class="btn btn-gold" onclick="copyPrompt('report-prompt-text')">📋 Kopyala ve ChatGPT'ye Sor</button>
+            </div>
+
+            <button class="btn btn-danger" onclick="clearInputs('view-rapor'); document.getElementById('report-prompt-box').style.display='none';">Raporu Temizle</button>
+        </div>
+    </section>
+
+    <!-- VIEW: KURALLAR -->
+    <section id="view-kurallar" class="view">
+        <div class="card">
+            <h2 style="font-size: 18px; margin-bottom: 16px;">Kesin Kurallar</h2>
+            <ul class="rules-list">
+                <li class="danger">Fiyat <b>ASLA</b> uydurulmayacak.</li>
+                <li class="danger">Stok <b>ASLA</b> uydurulmayacak.</li>
+                <li class="danger">Garanti şartları uydurulmayacak.</li>
+                <li class="danger">Kampanya/Şartlar uydurulmayacak.</li>
+                <li class="danger">Sahte indirim (üstü çizili yalan fiyat) kullanılmayacak.</li>
+                <li class="danger">Sahte müşteri yorumu kullanılmayacak.</li>
+                <li class="danger">Sahte aciliyet ("son 2 adet" yalanı) kullanılmayacak.</li>
+                <li class="danger">Kesin IMEI/Kapanma/Süre garantisi <b>VERİLMEYECEK</b>.</li>
+                <li class="danger">Teknik bilgiden emin değilsen kesin konuşma, İsa'ya sor.</li>
+                <li class="success">Satın alma niyeti yüksek sıcak müşteriyi anında İsa'ya aktar.</li>
+                <li class="success">Fiyat/Kampanya değişimleri için mutlaka İsa'dan onay al.</li>
+                <li class="success">Müşteriye satış baskısı kurma, çözüm odaklı ol.</li>
+                <li class="success">Cevapların kısa, net ve güven verici olsun.</li>
+                <li class="success">Hesabın ana teması "Güven" üzerine kuruludur.</li>
+                <li class="success">Gerçek mağaza, kargo ve müşteri videolarını maksimum seviyede kullan.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('bugun', this)">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            BUGÜN
+        </button>
+        <button class="nav-btn" onclick="switchTab('hafta', this)">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            HAFTA
+        </button>
+        <button class="nav-btn" onclick="switchTab('kampanya', this)">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            KAMPANYA
+        </button>
+        <button class="nav-btn" onclick="switchTab('chatgpt', this)">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            CHATGPT
+        </button>
+        <button class="nav-btn" onclick="switchTab('rapor', this)">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            RAPOR
+        </button>
+        <button class="nav-btn" onclick="switchTab('kurallar', this)">
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            KURALLAR
+        </button>
+    </nav>
+
+    <script>
+        // --- DATA STRUCTURES ---
+
+        const tasksBugun = {
+            sabah: [
+                "Instagram mesajlarını kontrol et",
+                "Yorumları kontrol et",
+                "ManyChat akışlarını kontrol et",
+                "Günün ürünlerini/fiyatlarını İsa'dan teyit et",
+                "Story planını kontrol et",
+                "Bugünün Reels/video içeriğini belirle"
+            ],
+            sosyal: [
+                "Gönderi hazırla ve paylaş",
+                "Günlük Story serisini hazırla",
+                "Reels hazırla / düzenle",
+                "Ürün / cihaz videosu çek",
+                "Mağaza içi/dışı kısa video çek",
+                "Kargo/gönderim güven içeriği çek",
+                "Müşteri (UGC) içeriklerini toparla"
+            ],
+            musteri: [
+                "Bekleyen DM'leri cevapla",
+                "Son gönderi yorumlarını cevapla",
+                "Satın alma niyeti yüksek müşterileri belirle",
+                "Sıcak müşterileri İsa'ya aktar",
+                "Teknik/arıza sorularını İsa'ya aktar"
+            ],
+            manychat: [
+                "Bot konuşmalarındaki takılmaları kontrol et",
+                "Cevapsız kalan akışları kontrol et",
+                "Bot üzerinden gelen satış fırsatlarını etiketle",
+                "Sorunlu akışları not al (Claude için)"
+            ],
+            aksam: [
+                "Günlük içerik performansını kontrol et",
+                "Gün sonu gelen DM'leri erit",
+                "Satış fırsatlarını İsa'ya raporla",
+                "Yarın yapılacakları planla",
+                "Günlük Rapor sekmesini doldur"
+            ]
+        };
+
+        const tasksHafta = [
+            "Haftalık sosyal medya toplantısı (İsa ile)",
+            "Geçen haftanın içerik analizi",
+            "En iyi çalışan içerikleri belirle",
+            "En çok DM getiren içerikleri listele",
+            "En çok satış ilgisi oluşturanları listele",
+            "Zayıf içerikleri tespit et ve nedenini bul",
+            "Gelecek hafta içerik planını oluştur",
+            "Haftalık kampanya planını oluştur",
+            "En az 1 adet 'Güven' içeriği planla",
+            "En az 1 adet 'Müşteri (UGC)' içeriği planla",
+            "En az 1 adet 'Laptop' içeriği planla",
+            "En az 1 adet 'Teknik Destek' içeriği planla",
+            "ManyChat haftalık konuşma analizi yap",
+            "Web sitesi / Katalog güncellemelerini kontrol et"
+        ];
+
+        const chatgptPrompts = [
+            {
+                id: "p-telefon", title: "📱 Telefon Paylaşımı",
+                inputs: ["Ürün", "Fiyat", "Stok"],
+                template: "Mix GSM için Instagram paylaşımı hazırlıyoruz.\n\nÜrün: {Ürün}\nFiyat: {Fiyat}\nStok: {Stok}\n\nGörev: Kısa, doğal, güven veren ve satış odaklı bir metin hazırla.\nKurallar:\n- 3 alternatif ver.\n- Fiyat ve stok dışında bilgi uydurma.\n- Abartılı veya doğrulanmamış iddialar (kapanmaz vb.) kullanma.\n- Metnin sonuna 'Güncel stok ve bilgi için DM'den yazabilirsiniz' şeklinde net bir CTA ekle."
+            },
+            {
+                id: "p-laptop", title: "💻 Laptop Paylaşımı",
+                inputs: ["Model", "Özellikler", "Fiyat", "Durum (Sıfır/İkinci El)"],
+                template: "Mix GSM için Laptop ilanı hazırlıyoruz.\n\nModel: {Model}\nÖzellikler: {Özellikler}\nDurum: {Durum (Sıfır/İkinci El)}\nFiyat: {Fiyat}\n\nGörev: Teknik özellikleri boğucu olmadan, oyun/iş kullanım faydası üzerinden anlatan satış odaklı bir metin hazırla. 3 alternatif ver. Abartılı vaat kullanma."
+            },
+            {
+                id: "p-reels", title: "🎬 Reels Senaryosu",
+                inputs: ["Konu/Odak", "Ürün", "Süre (Sn)"],
+                template: "Mix GSM Instagram hesabı için Reels senaryosu yaz.\n\nKonu: {Konu/Odak}\nÜrün: {Ürün}\nSüre: {Süre (Sn)} saniye\n\nGörev:\n1. İlk 3 saniye kancası (Hook) oluştur.\n2. Görsel planı (kamera neyi gösterecek) yaz.\n3. Ekranda çıkacak kısa yazıları belirt.\n4. Konuşma/Dış ses metnini yaz.\n5. Açıklama metnini (Caption) ve etiketleri hazırla."
+            },
+            {
+                id: "p-story", title: "📸 Story Serisi",
+                inputs: ["Konu", "Amaç (Güven/Satış/Bilgi)"],
+                template: "Mix GSM için ardışık Story (Hikaye) serisi tasarla.\n\nKonu: {Konu}\nAmaç: {Amaç (Güven/Satış/Bilgi)}\n\nGörev: 4 slaytlık bir akış oluştur.\nSlayt 1: Dikkat çekici soru/anket\nSlayt 2: Ürün/Sorun gösterimi\nSlayt 3: Mix GSM Çözümü (Güven veren kanıt)\nSlayt 4: Net aksiyon çağrısı (DM at, linke tıkla vb.)\nHer slayt için eklenecek yazıyı ve görseli belirt."
+            },
+            {
+                id: "p-kampanya", title: "🔥 Kampanya Metni",
+                inputs: ["Kampanya Adı", "Ürünler", "Şartlar/Bitiş"],
+                template: "Mix GSM için kampanya duyuru metni hazırlıyoruz.\n\nKampanya: {Kampanya Adı}\nÜrünler ve Fiyatlar: {Ürünler}\nŞartlar ve Bitiş: {Şartlar/Bitiş}\n\nGörev: Müşteriyi heyecanlandıran ancak sahte aciliyet (son 2 ürün vb.) KULLANMAYAN, dürüst ve net bir kampanya metni yaz. 3 farklı tarzda (Enerjik, Resmi, Kısa) alternatif ver."
+            },
+            {
+                id: "p-cevap", title: "💬 Müşteri Cevabı",
+                inputs: ["Müşteri Mesajı", "Bizim Cevabımız (Özet)"],
+                template: "Müşteriden gelen bir DM'e yanıt vereceğiz.\n\nMüşterinin yazdığı: {Müşteri Mesajı}\nBizim vermek istediğimiz net bilgi: {Bizim Cevabımız (Özet)}\n\nGörev: Bu kısa bilgiyi; samimi, profesyonel, Mix GSM kurumsal diline uygun ve müşteriyi satın almaya/iletişime devam etmeye teşvik edecek tam bir cümleye dönüştür. Baskıcı olma."
+            }
+        ];
+
+
+        // --- UI RENDER FUNCTIONS ---
+
+        function renderTasks() {
+            const createHTML = (prefix, arr) => arr.map((task, i) => `
+                <label class="task-item">
+                    <input type="checkbox" id="${prefix}-${i}" onchange="saveCheckboxes()">
+                    <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                    <div class="task-text">${task}</div>
+                </label>
+            `).join('');
+
+            document.getElementById('tasks-sabah').innerHTML = createHTML('bg-sb', tasksBugun.sabah);
+            document.getElementById('tasks-sosyal').innerHTML = createHTML('bg-sy', tasksBugun.sosyal);
+            document.getElementById('tasks-musteri').innerHTML = createHTML('bg-ms', tasksBugun.musteri);
+            document.getElementById('tasks-manychat').innerHTML = createHTML('bg-mc', tasksBugun.manychat);
+            document.getElementById('tasks-aksam').innerHTML = createHTML('bg-ak', tasksBugun.aksam);
+            
+            document.getElementById('tasks-hafta').innerHTML = createHTML('hf', tasksHafta);
+        }
+
+        function renderPrompts() {
+            const container = document.getElementById('prompts-container');
+            let html = '';
+            
+            chatgptPrompts.forEach((p, index) => {
+                let inputsHtml = p.inputs.map(inp => `
+                    <div class="form-group">
+                        <label>${inp}</label>
+                        <input type="text" class="form-control" id="inp-${p.id}-${inp}" placeholder="Değer girin...">
+                    </div>
+                `).join('');
+
+                html += `
+                    <div class="prompt-card" id="card-${p.id}">
+                        <div class="prompt-header" onclick="togglePrompt('${p.id}')">${p.title}</div>
+                        <div class="prompt-body">
+                            ${inputsHtml}
+                            <button class="btn btn-outline" onclick="generatePrompt(${index})">🚀 Komutu Hazırla</button>
+                            <div class="prompt-result" id="res-${p.id}">
+                                <textarea class="form-control" id="text-${p.id}" readonly></textarea>
+                                <button class="btn btn-gold" style="margin-top:10px;" onclick="copyPrompt('text-${p.id}')">📋 Kopyala</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- INTERACTION FUNCTIONS ---
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+            btn.classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function togglePrompt(id) {
+            const card = document.getElementById('card-' + id);
+            card.classList.toggle('open');
+        }
+
+        function generatePrompt(index) {
+            const p = chatgptPrompts[index];
+            let result = p.template;
+            
+            p.inputs.forEach(inp => {
+                const val = document.getElementById(`inp-${p.id}-${inp}`).value || `[${inp} belirtilmedi]`;
+                result = result.replace(new RegExp(`{${inp}}`, 'g'), val);
+            });
+
+            document.getElementById(`res-${p.id}`).style.display = 'block';
+            document.getElementById(`text-${p.id}`).value = result;
+        }
+
+        function generateReportPrompt() {
+            const f = (id) => document.getElementById(id).value || "0";
+            const text = (id) => document.getElementById(id).value || "Belirtilmedi";
+
+            const prompt = `Mix GSM Sosyal Medya Performans Verileri Analizi:
+
+Rakamlar:
+- Gönderi: ${f('rep-gonderi')}
+- Story: ${f('rep-story')}
+- Reels: ${f('rep-reels')}
+- Yeni DM: ${f('rep-dm')}
+- Yorum: ${f('rep-yorum')}
+- Bot Etkileşimi: ${f('rep-bot')}
+
+Satış Hunisi:
+- Sıcak Müşteri: ${f('rep-sicak')}
+- İsa'ya Aktarılan: ${f('rep-aktarilan')}
+- Satışa Dönen: ${f('rep-satis')}
+
+İçerik Gözlemleri:
+- En İyi İçerik: ${text('rep-eniyi')}
+- Zayıf İçerik: ${text('rep-zayif')}
+- Gözlemler: ${text('rep-notlar')}
+
+Görev: Bu verileri bir sosyal medya pazarlama uzmanı olarak analiz et. Dönüşüm oranlarını değerlendir, eksik noktaları tespit et ve önümüzdeki hafta performansı artırmak için uygulanabilir 5 somut adım (aksiyon) öner.`;
+
+            document.getElementById('report-prompt-box').style.display = 'block';
+            document.getElementById('report-prompt-text').value = prompt;
+        }
+
+        // --- CLIPBOARD ---
+
+        function copyPrompt(elementId) {
+            const text = document.getElementById(elementId).value;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(showToast).catch(fallbackCopyTextToClipboard);
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try { document.execCommand('copy'); showToast(); } catch (err) {}
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2000);
+        }
+
+
+        // --- LOCAL STORAGE MANGEMENT ---
+
+        const LS_PREFIX = "mixgsm_behlul_";
+
+        function saveCheckboxes() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let state = {};
+            checkboxes.forEach(cb => { state[cb.id] = cb.checked; });
+            localStorage.setItem(LS_PREFIX + "checks", JSON.stringify(state));
+        }
+
+        function loadCheckboxes() {
+            const state = JSON.parse(localStorage.getItem(LS_PREFIX + "checks") || "{}");
+            Object.keys(state).forEach(id => {
+                const cb = document.getElementById(id);
+                if(cb) cb.checked = state[id];
+            });
+        }
+
+        function clearCheckboxes(section) {
+            if(!confirm("İşaretleri sıfırlamak istediğinize emin misiniz?")) return;
+            const checkboxes = document.querySelectorAll(`#view-${section} input[type="checkbox"]`);
+            checkboxes.forEach(cb => cb.checked = false);
+            saveCheckboxes();
+        }
+
+        function bindInputsToLS() {
+            const inputs = document.querySelectorAll('.ls-bind');
+            inputs.forEach(inp => {
+                // Load
+                const saved = localStorage.getItem(LS_PREFIX + inp.id);
+                if(saved !== null) inp.value = saved;
+                
+                // Save on change
+                inp.addEventListener('input', () => {
+                    localStorage.setItem(LS_PREFIX + inp.id, inp.value);
+                });
+            });
+        }
+
+        function clearInputs(viewId) {
+            if(!confirm("Tüm formu temizlemek istediğinize emin misiniz?")) return;
+            const inputs = document.querySelectorAll(`#${viewId} .ls-bind`);
+            inputs.forEach(inp => {
+                inp.value = '';
+                localStorage.removeItem(LS_PREFIX + inp.id);
+            });
+        }
+
+
+        // --- INIT ---
+        window.onload = () => {
+            renderTasks();
+            renderPrompts();
+            loadCheckboxes();
+            bindInputsToLS();
+        };
+
+    </script>
+</body>
+</html>
